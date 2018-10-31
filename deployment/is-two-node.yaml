@@ -794,6 +794,15 @@ Outputs:
           - DNSName
         - '/carbon'
     Description: Identity Server Management Console URL
+  ISServerURL:
+    Value: !Join
+      - ''
+      - - 'https://'
+        - !GetAtt
+          - WSO2ISLoadBalancer
+          - DNSName
+          - '/service'
+    Description: Carbon Server URL
 Parameters:
   AWSAccessKeyId:
     Type: String
@@ -835,6 +844,11 @@ Parameters:
   DBEngine:
     Type: String
     Default: MySQL_5.6
+    AllowedValues:
+      - MySQL_5.7
+      - MySQL_5.6
+      - Oracle
+      - MSSQL
   DBPassword:
     Type: String
     MinLength: 8
