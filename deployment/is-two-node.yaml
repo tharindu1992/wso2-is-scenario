@@ -14,7 +14,7 @@
 
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  WSO2 Enterprise Integrator Clustered deployment with Analytics Configured
+  WSO2 Identity Server deployment with Clustering
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -69,105 +69,105 @@ Metadata:
         default: OS Type
 Resources:
   # networking configurations
-  WSO2EIVPC:
+  WSO2ISVPC:
     Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: 10.0.0.0/16
       EnableDnsSupport: true
       EnableDnsHostnames: true
-  WSO2EIPublicSubnet1:
+  WSO2ISPublicSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: !Ref WSO2EIVPC
+      VpcId: !Ref WSO2ISVPC
       CidrBlock: 10.0.254.0/24
       AvailabilityZone: !Select
         - '0'
         - !GetAZs ''
-  WSO2EIPublicSubnet2:
+  WSO2ISPublicSubnet2:
       Type: 'AWS::EC2::Subnet'
       Properties:
-        VpcId: !Ref WSO2EIVPC
+        VpcId: !Ref WSO2ISVPC
         CidrBlock: 10.0.252.0/24
         AvailabilityZone: !Select
           - '1'
           - !GetAZs ''
-  WSO2EIPublicInternetGateway:
+  WSO2ISPublicInternetGateway:
     Type: 'AWS::EC2::InternetGateway'
-  WSO2EIPublicRouteTable:
+  WSO2ISPublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
-      VpcId: !Ref WSO2EIVPC
-  WSO2EIPublicSubnet1RouteTableAssociation:
+      VpcId: !Ref WSO2ISVPC
+  WSO2ISPublicSubnet1RouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
-      RouteTableId: !Ref WSO2EIPublicRouteTable
-      SubnetId: !Ref WSO2EIPublicSubnet1
-  WSO2EIPublicSubnet2RouteTableAssociation:
+      RouteTableId: !Ref WSO2ISPublicRouteTable
+      SubnetId: !Ref WSO2ISPublicSubnet1
+  WSO2ISPublicSubnet2RouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
-      RouteTableId: !Ref WSO2EIPublicRouteTable
-      SubnetId: !Ref WSO2EIPublicSubnet2
-  WSO2EIPublicRoute:
+      RouteTableId: !Ref WSO2ISPublicRouteTable
+      SubnetId: !Ref WSO2ISPublicSubnet2
+  WSO2ISPublicRoute:
     Type: 'AWS::EC2::Route'
     Properties:
-      RouteTableId: !Ref WSO2EIPublicRouteTable
-      GatewayId: !Ref WSO2EIPublicInternetGateway
+      RouteTableId: !Ref WSO2ISPublicRouteTable
+      GatewayId: !Ref WSO2ISPublicInternetGateway
       DestinationCidrBlock: 0.0.0.0/0
-    DependsOn: WSO2EIVPCInternetGatewayAttachment
-  WSO2EIVPCInternetGatewayAttachment:
+    DependsOn: WSO2ISVPCInternetGatewayAttachment
+  WSO2ISVPCInternetGatewayAttachment:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
-      InternetGatewayId: !Ref WSO2EIPublicInternetGateway
-      VpcId: !Ref WSO2EIVPC
-  WSO2EIPrivateSubnet1:
+      InternetGatewayId: !Ref WSO2ISPublicInternetGateway
+      VpcId: !Ref WSO2ISVPC
+  WSO2ISPrivateSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: !Ref WSO2EIVPC
+      VpcId: !Ref WSO2ISVPC
       CidrBlock: 10.0.1.0/24
       AvailabilityZone: !Select
         - '0'
         - !GetAZs ''
-  WSO2EIPrivateSubnet2:
+  WSO2ISPrivateSubnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: !Ref WSO2EIVPC
+      VpcId: !Ref WSO2ISVPC
       CidrBlock: 10.0.2.0/24
       AvailabilityZone: !Select
         - '1'
         - !GetAZs ''
-  WSO2EIPrivateSubnetRouteTable:
+  WSO2ISPrivateSubnetRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
-      VpcId: !Ref WSO2EIVPC
-  WSO2EIPrivateRoute:
+      VpcId: !Ref WSO2ISVPC
+  WSO2ISPrivateRoute:
     Type: 'AWS::EC2::Route'
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref WSO2EINATGateway
-      RouteTableId: !Ref WSO2EIPrivateSubnetRouteTable
-  WSO2EIPrivateSubnet1RouteTableAssociation:
+      NatGatewayId: !Ref WSO2ISNATGateway
+      RouteTableId: !Ref WSO2ISPrivateSubnetRouteTable
+  WSO2ISPrivateSubnet1RouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
-      RouteTableId: !Ref WSO2EIPrivateSubnetRouteTable
-      SubnetId: !Ref WSO2EIPrivateSubnet1
-  WSO2EIPrivateSubnet2RouteTableAssociation:
+      RouteTableId: !Ref WSO2ISPrivateSubnetRouteTable
+      SubnetId: !Ref WSO2ISPrivateSubnet1
+  WSO2ISPrivateSubnet2RouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
-      RouteTableId: !Ref WSO2EIPrivateSubnetRouteTable
-      SubnetId: !Ref WSO2EIPrivateSubnet2
-  WSO2EINATGateway:
+      RouteTableId: !Ref WSO2ISPrivateSubnetRouteTable
+      SubnetId: !Ref WSO2ISPrivateSubnet2
+  WSO2ISNATGateway:
     Type: 'AWS::EC2::NatGateway'
     Properties:
       AllocationId: !GetAtt
-        - WSO2EIEIP
+        - WSO2ISEIP
         - AllocationId
-      SubnetId: !Ref WSO2EIPublicSubnet1
+      SubnetId: !Ref WSO2ISPublicSubnet1
   WSO2BastionEIPAssociation:
     Type: 'AWS::EC2::EIPAssociation'
     Properties:
       AllocationId: !GetAtt WSO2BastionEIP.AllocationId
       InstanceId: !Ref WSO2BastionInstance
-  WSO2EIEIP:
+  WSO2ISEIP:
     Type: 'AWS::EC2::EIP'
     Properties:
       Domain: vpc
@@ -176,85 +176,88 @@ Resources:
     Properties:
       Domain: vpc
   # database configurations
-  WSO2EIDBInstanceSecurityGroup:
+  WSO2ISDBInstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: !Ref WSO2EIVPC
+      VpcId: !Ref WSO2ISVPC
       GroupDescription: DB Security Group
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: '3306'
           ToPort: '3306'
           CidrIp: 0.0.0.0/0
-  WSO2EIDBInstance:
+  WSO2ISDBInstance:
     Type: 'AWS::RDS::DBInstance'
     DeletionPolicy: Delete
     Properties:
       VPCSecurityGroups:
-        - !Ref WSO2EIDBInstanceSecurityGroup
+        - !Ref WSO2ISDBInstanceSecurityGroup
       DBInstanceClass: db.t2.medium
       AllocatedStorage: 5
       BackupRetentionPeriod: '0'
-      DBInstanceIdentifier: WSO2EIDBInstance
-      DBName: WSO2_EI_DB
+      DBInstanceIdentifier: WSO2ISDBInstance
+      DBName: WSO2_IS_DB
+      #EngineVersion: !Select [1, !Split ["_", !ImportValue DBEngine]]
+      #Engine:  !Select [0, !Split ["_", !ImportValue DBEngine]]
+      EngineVersion: 5.7.22
       Engine: MySQL
       MasterUsername: !Ref DBUsername
       MasterUserPassword: !Ref DBPassword
-      MultiAZ: 'true'
+      MultiAZ: 'false'
       StorageType: gp2
-      DBSubnetGroupName: !Ref WSO2EIDBSubnetGroup
-  WSO2EIDBSubnetGroup:
+      DBSubnetGroupName: !Ref WSO2ISDBSubnetGroup
+  WSO2ISDBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
       DBSubnetGroupDescription: DB Subnet Group
       SubnetIds:
-        - !Ref WSO2EIPrivateSubnet1
-        - !Ref WSO2EIPrivateSubnet2
+        - !Ref WSO2ISPrivateSubnet1
+        - !Ref WSO2ISPrivateSubnet2
   # File system configurations
-  WSO2EIEFSSecurityGroup:
+  WSO2ISEFSSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: !Ref WSO2EIVPC
+      VpcId: !Ref WSO2ISVPC
       GroupDescription: EFS Security Group
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: '2049'
         ToPort: '2049'
         CidrIp: 0.0.0.0/0
-  WSO2EIEFSFileSystem:
+  WSO2ISEFSFileSystem:
     Type: 'AWS::EFS::FileSystem'
     Properties:
       PerformanceMode: generalPurpose
-  WSO2EIPrivateSubnet1EFSMountTarget:
+  WSO2ISPrivateSubnet1EFSMountTarget:
     Type: 'AWS::EFS::MountTarget'
     Properties:
-      SubnetId: !Ref WSO2EIPrivateSubnet1
-      FileSystemId: !Ref WSO2EIEFSFileSystem
+      SubnetId: !Ref WSO2ISPrivateSubnet1
+      FileSystemId: !Ref WSO2ISEFSFileSystem
       SecurityGroups:
-        - !Ref WSO2EIEFSSecurityGroup
-  WSO2EIPrivateSubnet2EFSMountTarget:
+        - !Ref WSO2ISEFSSecurityGroup
+  WSO2ISPrivateSubnet2EFSMountTarget:
     Type: 'AWS::EFS::MountTarget'
     Properties:
-      SubnetId: !Ref WSO2EIPrivateSubnet2
-      FileSystemId: !Ref WSO2EIEFSFileSystem
+      SubnetId: !Ref WSO2ISPrivateSubnet2
+      FileSystemId: !Ref WSO2ISEFSFileSystem
       SecurityGroups:
-        - !Ref WSO2EIEFSSecurityGroup
+        - !Ref WSO2ISEFSSecurityGroup
   # Product configurations
   BastionSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: !Ref WSO2EIVPC
+      VpcId: !Ref WSO2ISVPC
       GroupDescription: WSO2 Bastion node Security Group
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
-  WSO2EISecurityGroup:
+  WSO2ISSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: !Ref WSO2EIVPC
-      GroupDescription: WSO2 Enterprise Integrator Security Group
+      VpcId: !Ref WSO2ISVPC
+      GroupDescription: WSO2 Identity Manager Security Group
       GroupName: WSO2SecurityGroup
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -264,97 +267,38 @@ Resources:
         - IpProtocol: tcp
           FromPort: '8280'
           ToPort: '8280'
-          SourceSecurityGroupId: !Ref WSO2EILoadBalancerSecurityGroup
+          SourceSecurityGroupId: !Ref WSO2ISLoadBalancerSecurityGroup
         - IpProtocol: tcp
           FromPort: '9763'
           ToPort: '9763'
-          SourceSecurityGroupId: !Ref WSO2EILoadBalancerSecurityGroup
+          SourceSecurityGroupId: !Ref WSO2ISLoadBalancerSecurityGroup
         - IpProtocol: tcp
           FromPort: '9443'
           ToPort: '9443'
-          SourceSecurityGroupId: !Ref WSO2EILoadBalancerSecurityGroup
+          SourceSecurityGroupId: !Ref WSO2ISLoadBalancerSecurityGroup
         - IpProtocol: tcp
           FromPort: '8243'
           ToPort: '8243'
-          SourceSecurityGroupId: !Ref WSO2EILoadBalancerSecurityGroup
+          SourceSecurityGroupId: !Ref WSO2ISLoadBalancerSecurityGroup
         - IpProtocol: tcp
           FromPort: '5672'
           ToPort: '5672'
-          SourceSecurityGroupId: !Ref WSO2EILoadBalancerSecurityGroup
+          SourceSecurityGroupId: !Ref WSO2ISLoadBalancerSecurityGroup
         - IpProtocol: tcp
-          FromPort: '4100'
-          ToPort: '4100'
+          FromPort: '5701'
+          ToPort: '5701'
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: '8140'
           ToPort: '8140'
-          SourceSecurityGroupId: !Ref WSO2EILoadBalancerSecurityGroup
-  # WSO2EIAnalyticsSecurityGroup:
-  #   Type: 'AWS::EC2::SecurityGroup'
-  #   Properties:
-  #     VpcId: !Ref WSO2EIVPC
-  #     GroupDescription: WSO2 Enterprise Integrator Security Group
-  #     GroupName: WSO2AnalyticsSecurityGroup
-  #     SecurityGroupIngress:
-  #       - IpProtocol: tcp
-  #         FromPort: 22
-  #         ToPort: 22
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '4040'
-  #         ToPort: '4040'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
-  #       - IpProtocol: tcp
-  #         FromPort: '9091'
-  #         ToPort: '9091'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
-  #       - IpProtocol: tcp
-  #         FromPort: '9764'
-  #         ToPort: '9764'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
-  #       - IpProtocol: tcp
-  #         FromPort: '9713'
-  #         ToPort: '9713'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
-  #       - IpProtocol: tcp
-  #         FromPort: '9613'
-  #         ToPort: '9613'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
-  #       - IpProtocol: tcp
-  #         FromPort: '7071'
-  #         ToPort: '7071'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7444'
-  #         ToPort: '7444'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9444'
-  #         ToPort: '9444'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
-  #       - IpProtocol: tcp
-  #         FromPort: '9711'
-  #         ToPort: '9711'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
-  #       - IpProtocol: tcp
-  #         FromPort: '7612'
-  #         ToPort: '7612'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7712'
-  #         ToPort: '7712'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9443'
-  #         ToPort: '9443'
-  #         SourceSecurityGroupId: !Ref WSO2EIAnalyticsLoadBalancerSecurityGroup
+          CidrIp: 0.0.0.0/0
   WSO2BastionInstance:
     Type: 'AWS::EC2::Instance'
     Properties:
       DisableApiTermination: 'false'
       InstanceInitiatedShutdownBehavior: stop
       ImageId: !FindInMap
-        - WSO2EIAMIRegionMap
+        - WSO2ISAMIRegionMap
         - !Ref 'AWS::Region'
         - Ubuntu180464bit
       InstanceType: t2.micro
@@ -367,7 +311,7 @@ Resources:
         - DeleteOnTermination: 'true'
           Description: Primary network interface
           DeviceIndex: 0
-          SubnetId: !Ref WSO2EIPublicSubnet1
+          SubnetId: !Ref WSO2ISPublicSubnet1
           GroupSet:
             - !Ref BastionSecurityGroup
   PuppetMaster:
@@ -389,7 +333,7 @@ Resources:
         - DeleteOnTermination: 'true'
           Description: Primary network interface
           DeviceIndex: 0
-          SubnetId: !Ref WSO2EIPrivateSubnet1
+          SubnetId: !Ref WSO2ISPrivateSubnet1
           GroupSet:
             - !Ref PuppetMasterSecurityGroup
       UserData: !Base64
@@ -405,105 +349,65 @@ Resources:
             - sed -i '/\[main\]/a dns_alt_names=puppetmaster,puppet' /etc/puppet/puppet.conf
             - sed -i '/\[master\]/a autosign=true' /etc/puppet/puppet.conf
             - service puppetmaster restart
-            - !Sub "./home/ubuntu/ei-init.sh ${WUMUsername} ${WUMPassword}"
+            - !Sub "./home/ubuntu/is-init.sh ${WUMUsername} ${WUMPassword}"
             - !Join
               - ''
               - - sed -i "s/access-key/
                 - !Ref AWSAccessKeyId
-                - /g" /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
+                - /g" /etc/puppet/code/environments/production/modules/is/manifests/params.pp
             - !Join
               - ''
               - - sed -i "s/REGION_NAME/
                 - !Ref "AWS::Region"
-                - /g" /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
+                - /g" /etc/puppet/code/environments/production/modules/is/manifests/params.pp
             - !Join
               - ''
               - - sed -i "s/CF_ELB_DNS_NAME/
                 - !GetAtt
-                  - WSO2EILoadBalancer
+                  - WSO2ISLoadBalancer
                   - DNSName
                 - >-
                   /g"
-                  /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
+                  /etc/puppet/code/environments/production/modules/is/manifests/params.pp
             - !Join
               - ''
               - - sed -i "s/CF_DB_USERNAME/
                 - !Ref DBUsername
-                - /g" /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
+                - /g" /etc/puppet/code/environments/production/modules/is/manifests/params.pp
             - !Join
               - ''
               - - sed -i "s/CF_DB_PASSWORD/
                 - !Ref DBPassword
-                - /g" /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
+                - /g" /etc/puppet/code/environments/production/modules/is/manifests/params.pp
             - !Join
               - ''
               - - sed -i "s/CF_RDS_URL/
                 - !GetAtt
-                  - WSO2EIDBInstance
+                  - WSO2ISDBInstance
                   - Endpoint.Address
-                - /g" /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
-            - !Join
-              - ''
-              - - sed -i "s/BROKER_ELB_DNS_NAME/
-                - 'localhost'
-                - >-
-                  /g"
-                  /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
+                - /g" /etc/puppet/code/environments/production/modules/is/manifests/params.pp
             - !Join
               - ''
               - - sed -i "s^secretkey^
                 - !Ref AWSAccessKeySecret
-                - ^g" /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
+                - ^g" /etc/puppet/code/environments/production/modules/is/manifests/params.pp
+            - export DB_NAME=WSO2_IS_DB
             - !Join
               - ''
               - - sed -i "s/JDK_TYPE/
                 - !Ref JDKVersion
-                - /g" /etc/puppet/code/environments/production/modules/ei_integrator/manifests/params.pp
-            - !Join
-              - ''
-              - - sed -i "s/CF_DB_USERNAME/
-                - !Ref DBUsername
-                - /g" /etc/puppet/code/environments/production/modules/ei_analytics_dashboard/manifests/params.pp
-            - !Join
-              - ''
-              - - sed -i "s/CF_DB_PASSWORD/
-                - !Ref DBPassword
-                - /g" /etc/puppet/code/environments/production/modules/ei_analytics_dashboard/manifests/params.pp
-            - !Join
-              - ''
-              - - sed -i "s/CF_RDS_URL/
-                - !GetAtt
-                  - WSO2EIDBInstance
-                  - Endpoint.Address
-                - /g" /etc/puppet/code/environments/production/modules/ei_analytics_dashboard/manifests/params.pp
-            - !Join
-              - ''
-              - - sed -i "s/CF_DB_USERNAME/
-                - !Ref DBUsername
-                - /g" /etc/puppet/code/environments/production/modules/ei_analytics_worker/manifests/params.pp
-            - !Join
-              - ''
-              - - sed -i "s/CF_DB_PASSWORD/
-                - !Ref DBPassword
-                - /g" /etc/puppet/code/environments/production/modules/ei_analytics_worker/manifests/params.pp
-            - !Join
-              - ''
-              - - sed -i "s/CF_RDS_URL/
-                - !GetAtt
-                  - WSO2EIDBInstance
-                  - Endpoint.Address
-                - /g" /etc/puppet/code/environments/production/modules/ei_analytics_worker/manifests/params.pp
+                - /g" /etc/puppet/code/environments/production/modules/is/manifests/params.pp
             - !Join
               - ''
               - - export DB_HOSTNAME=
                 - !GetAtt
-                  - WSO2EIDBInstance
+                  - WSO2ISDBInstance
                   - Endpoint.Address
             - !Join
               - ''
               - - export DB_PORT=
                 - !GetAtt
-                  - WSO2EIDBInstance
+                  - WSO2ISDBInstance
                   - Endpoint.Port
             - !Join
               - ''
@@ -517,31 +421,31 @@ Resources:
               - ''
               - - sed -i "s/CF_DB_USERNAME/
                 - !Ref DBUsername
-                - /g" /usr/local/bin/provision_db_ei.sh
+                - /g" /usr/local/bin/provision_db_is.sh
             - !Join
               - ''
               - - sed -i "s/CF_DB_PASSWORD/
                 - !Ref DBPassword
-                - /g" /usr/local/bin/provision_db_ei.sh
+                - /g" /usr/local/bin/provision_db_is.sh
             - !Join
               - ''
               - - sed -i "s/CF_DB_HOST/
                 - !GetAtt
-                  - WSO2EIDBInstance
+                  - WSO2ISDBInstance
                   - Endpoint.Address
-                - /g" /usr/local/bin/provision_db_ei.sh
+                - /g" /usr/local/bin/provision_db_is.sh
             - !Join
               - ''
               - - sed -i "s/CF_DB_PORT/
                 - !GetAtt
-                  - WSO2EIDBInstance
+                  - WSO2ISDBInstance
                   - Endpoint.Port
-                - /g" /usr/local/bin/provision_db_ei.sh
-            - bash /usr/local/bin/provision_db_ei.sh
+                - /g" /usr/local/bin/provision_db_is.sh
+            - bash /usr/local/bin/provision_db_is.sh
   PuppetMasterSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: !Ref WSO2EIVPC
+      VpcId: !Ref WSO2ISVPC
       GroupDescription: WSO2 PuppetMaster Security Group
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -552,11 +456,11 @@ Resources:
           FromPort: '8140'
           ToPort: '8140'
           CidrIp: 0.0.0.0/0
-  WSO2EINode1LaunchConfiguration:
+  WSO2ISNode1LaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
       ImageId: !FindInMap
-        - WSO2EIAMIRegionMap
+        - WSO2ISAMIRegionMap
         - !Ref 'AWS::Region'
         - Ubuntu180464bit
       InstanceType: !Ref WSO2InstanceType
@@ -568,7 +472,7 @@ Resources:
             DeleteOnTermination: 'true'
       KeyName: !Ref KeyPairName
       SecurityGroups:
-        - !Ref WSO2EISecurityGroup
+        - !Ref WSO2ISSecurityGroup
       UserData: !Base64
         'Fn::Join':
           - |+
@@ -588,94 +492,77 @@ Resources:
             - echo "${PuppetmasterIP} puppet puppetmaster" >> /etc/hosts
             - service puppet restart
             - mkdir -p /mnt/efs
-            - !Sub "mount -t nfs4 -o nfsvers=4.1 ${WSO2EIEFSFileSystem}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs"
-            - sleep 400
-            - export FACTER_profile=ei_integrator
+            - !Sub "mount -t nfs4 -o nfsvers=4.1 ${WSO2ISEFSFileSystem}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs"
+            - sleep 350
+            - export FACTER_profile=is
             - puppet agent -vt
             - sleep 120
-            - 'if [ ! -d "/mnt/efs/deployment/server" ]; then'
-            - '    mkdir -p /mnt/efs/deployment/server'
-            - '    cp -r /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server /mnt/efs/deployment'
+            - 'if [ ! -d "/mnt/efs/server" ]; then'
+            - '    mkdir -p /mnt/efs/server'
+            - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/wso2is-5.7.0/repository/deployment/server /mnt/efs'
             - fi
             - >-
               rm -rf
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2ei-6.4.0/repository/deployment/server
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/wso2is-5.7.0/repository/deployment/server
             - >-
-              ln -s /mnt/efs/deployment/server
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2ei-6.4.0/repository/deployment/server
+              ln -s /mnt/efs/server
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/wso2is-5.7.0/repository/deployment/server
             - 'if [ ! -d "/mnt/efs/tenants" ]; then'
             - '    mkdir -p /mnt/efs/tenants'
-            - '    cp -r /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2ei-6.4.0/repository/tenants /mnt/efs'
+            - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/tenants /mnt/efs'
             - fi
             - >-
               rm -rf
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2ei-6.4.0/repository/tenants
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/tenants
             - >-
               ln -s /mnt/efs/tenants
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2ei-6.4.0/repository/tenants
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/tenants
             - apt-get install -y python3-pip
             - pip3 install boto3
-            - echo "${WSO2EIEFSFileSystem}:/ /mnt/efs efs defaults,_netdev 0 0" >> /etc/fstab
-            - !Sub "PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2EIInstance1)"
+            - echo "${WSO2ISEFSFileSystem}:/ /mnt/efs efs defaults,_netdev 0 0" >> /etc/fstab
+            - !Sub "PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2ISInstance1)"
             - !Join
               - ''
               - - sed -i "s/LOCAL-MEMBER-HOST/
                 - $PRIVATE_IP
                 - >-
                   /g"
-                  /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/conf/axis2/axis2.xml
-            - !Sub "ANALYTICS_PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2EIAnalyticsWorker)"
-            - !Join
-              - ''
-              - - sed -i "s/CF_ANALYTICS_IP/
-                - $ANALYTICS_PRIVATE_IP
-                - >-
-                  /g"
-                  /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server/eventpublishers/MessageFlowConfigurationPublisher.xml
-            - !Join
-              - ''
-              - - sed -i "s/CF_ANALYTICS_IP/
-                - $ANALYTICS_PRIVATE_IP
-                - >-
-                  /g"
-                  /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server/eventpublishers/MessageFlowStatisticsPublisher.xml
-            - /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/bin/integrator.sh start
+                  /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/conf/axis2/axis2.xml
+            - /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/bin/wso2server.sh start
             - echo 'export HISTTIMEFORMAT="%F %T "' >> /etc/profile.d/history.sh
             - cat /dev/null > ~/.bash_history && history -c
     DependsOn:
-      # - WSO2EIAnalyticsNode1LaunchConfiguration
-      # - WSO2EIAnalyticsNode2LaunchConfiguration
-      - WSO2EISecurityGroup
-      - WSO2EILoadBalancer
-      - WSO2EIVPCInternetGatewayAttachment
-      - WSO2EIDBInstance
+      - WSO2ISSecurityGroup
+      - WSO2ISLoadBalancer
+      - WSO2ISVPCInternetGatewayAttachment
+      - WSO2ISDBInstance
       - PuppetMaster
-  WSO2EINode1AutoScalingGroup:
+  WSO2ISNode1AutoScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
-      LaunchConfigurationName: !Ref WSO2EINode1LaunchConfiguration
+      LaunchConfigurationName: !Ref WSO2ISNode1LaunchConfiguration
       DesiredCapacity: 1
       MinSize: 1
       MaxSize: 1
       LoadBalancerNames:
-        - !Ref WSO2EILoadBalancer
+        - !Ref WSO2ISLoadBalancer
       VPCZoneIdentifier:
-        - !Ref WSO2EIPrivateSubnet1
+        - !Ref WSO2ISPrivateSubnet1
       Tags:
         - Key: Name
-          Value: WSO2EIInstance1
+          Value: WSO2ISInstance1
           PropagateAtLaunch: 'true'
         - Key: cluster
-          Value: ei
+          Value: is
           PropagateAtLaunch: 'true'
     DependsOn:
-      - WSO2EILoadBalancer
-      - WSO2EINode1LaunchConfiguration
-  WSO2EINode2LaunchConfiguration:
+      - WSO2ISLoadBalancer
+      - WSO2ISNode1LaunchConfiguration
+  WSO2ISNode2LaunchConfiguration:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
       ImageId: !FindInMap
-        - WSO2EIAMIRegionMap
+        - WSO2ISAMIRegionMap
         - !Ref 'AWS::Region'
         - Ubuntu180464bit
       InstanceType: !Ref WSO2InstanceType
@@ -687,7 +574,7 @@ Resources:
             DeleteOnTermination: 'true'
       KeyName: !Ref KeyPairName
       SecurityGroups:
-        - !Ref WSO2EISecurityGroup
+        - !Ref WSO2ISSecurityGroup
       UserData: !Base64
         'Fn::Join':
           - |+
@@ -707,343 +594,77 @@ Resources:
             - echo "${PuppetmasterIP} puppet puppetmaster" >> /etc/hosts
             - service puppet restart
             - mkdir -p /mnt/efs
-            - !Sub "mount -t nfs4 -o nfsvers=4.1 ${WSO2EIEFSFileSystem}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs"
-            - sleep 400
-            - export FACTER_profile=ei_integrator
+            - !Sub "mount -t nfs4 -o nfsvers=4.1 ${WSO2ISEFSFileSystem}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs"
+            - sleep 350
+            - export FACTER_profile=is
             - puppet agent -vt
             - sleep 120
-            - 'if [ ! -d "/mnt/efs/deployment/server" ]; then'
-            - '    mkdir -p /mnt/efs/deployment/server'
-            - '    cp -r /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server /mnt/efs/deployment'
+            - 'if [ ! -d "/mnt/efs/server" ]; then'
+            - '    mkdir -p /mnt/efs/server'
+            - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/deployment/server /mnt/efs'
             - fi
             - >-
               rm -rf
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/deployment/server
             - >-
-              ln -s /mnt/efs/deployment/server
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server
+              ln -s /mnt/efs/server
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/deployment/server
             - 'if [ ! -d "/mnt/efs/tenants" ]; then'
             - '    mkdir -p /mnt/efs/tenants'
-            - '    cp -r /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/tenants /mnt/efs'
+            - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/tenants /mnt/efs'
             - fi
             - >-
               rm -rf
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/tenants
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/tenants
             - >-
               ln -s /mnt/efs/tenants
-              /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/tenants
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/tenants
             - apt-get install -y python3-pip
             - pip3 install boto3
-            - echo "${WSO2EIEFSFileSystem}:/ /mnt/efs efs defaults,_netdev 0 0" >> /etc/fstab
-            - !Sub "PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2EIInstance2)"
+            - echo "${WSO2ISEFSFileSystem}:/ /mnt/efs efs defaults,_netdev 0 0" >> /etc/fstab
+            - !Sub "PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2ISInstance2)"
             - !Join
               - ''
               - - sed -i "s/LOCAL-MEMBER-HOST/
                 - $PRIVATE_IP
                 - >-
                   /g"
-                  /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/conf/axis2/axis2.xml
-            - !Sub "ANALYTICS_PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2EIAnalyticsWorker)"
-            - !Join
-              - ''
-              - - sed -i "s/CF_ANALYTICS_IP/
-                - $ANALYTICS_PRIVATE_IP
-                - >-
-                  /g"
-                  /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server/eventpublishers/MessageFlowConfigurationPublisher.xml
-            - !Join
-              - ''
-              - - sed -i "s/CF_ANALYTICS_IP/
-                - $ANALYTICS_PRIVATE_IP
-                - >-
-                  /g"
-                  /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/repository/deployment/server/eventpublishers/MessageFlowStatisticsPublisher.xml
-            - /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/bin/integrator.sh start
+                  /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/conf/axis2/axis2.xml
+            - /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/bin/wso2server.sh start
             - echo 'export HISTTIMEFORMAT="%F %T "' >> /etc/profile.d/history.sh
             - cat /dev/null > ~/.bash_history && history -c
     DependsOn:
-      # - WSO2EIAnalyticsNode1LaunchConfiguration
-      # - WSO2EIAnalyticsNode2LaunchConfiguration
-      - WSO2EISecurityGroup
-      - WSO2EILoadBalancer
-      - WSO2EIVPCInternetGatewayAttachment
-      - WSO2EIDBInstance
+      - WSO2ISSecurityGroup
+      - WSO2ISLoadBalancer
+      - WSO2ISVPCInternetGatewayAttachment
+      - WSO2ISDBInstance
       - PuppetMaster
-  WSO2EINode2AutoScalingGroup:
+  WSO2ISNode2AutoScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
-      LaunchConfigurationName: !Ref WSO2EINode2LaunchConfiguration
+      LaunchConfigurationName: !Ref WSO2ISNode2LaunchConfiguration
       DesiredCapacity: 1
       MinSize: 1
       MaxSize: 1
       LoadBalancerNames:
-        - !Ref WSO2EILoadBalancer
+        - !Ref WSO2ISLoadBalancer
       VPCZoneIdentifier:
-        - !Ref WSO2EIPrivateSubnet1
+        - !Ref WSO2ISPrivateSubnet1
       Tags:
         - Key: Name
-          Value: WSO2EIInstance2
+          Value: WSO2ISInstance2
           PropagateAtLaunch: 'true'
         - Key: cluster
-          Value: ei
+          Value: is
           PropagateAtLaunch: 'true'
     DependsOn:
-      - WSO2EILoadBalancer
-      - WSO2EINode2LaunchConfiguration
-# # Analytics WORKER
-#   WSO2EIAnalyticsNode1LaunchConfiguration:
-#     Type: 'AWS::AutoScaling::LaunchConfiguration'
-#     Properties:
-#       ImageId: !FindInMap
-#         - WSO2EIAMIRegionMap
-#         - !Ref 'AWS::Region'
-#         - Ubuntu180464bit
-#       InstanceType: !Ref WSO2InstanceType
-#       BlockDeviceMappings:
-#         - DeviceName: /dev/sda1
-#           Ebs:
-#             VolumeSize: '20'
-#             VolumeType: gp2
-#             DeleteOnTermination: 'true'
-#       KeyName: !Ref KeyPairName
-#       SecurityGroups:
-#         - !Ref WSO2EIAnalyticsSecurityGroup
-#       UserData: !Base64
-#         'Fn::Join':
-#           - |+
-#
-#           - - '#!/bin/bash'
-#             - 'export PATH=~/.local/bin:$PATH'
-#             - apt-get update
-#             - apt-get install -y puppet
-#             - sed -i '/\[main\]/a server=puppet' /etc/puppet/puppet.conf
-#             - !Join
-#               - ''
-#               - - export PuppetmasterIP=
-#                 - !GetAtt
-#                   - PuppetMaster
-#                   - PrivateIp
-#             - echo "${PuppetmasterIP} puppet puppetmaster" >> /etc/hosts
-#             - sleep 500
-#             - export FACTER_profile=ei_analytics_worker
-#             - puppet agent -vt
-#             - sleep 30
-#             - apt-get install -y python3-pip
-#             - pip3 install boto3
-#             - !Sub "PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2EIAnalyticsWorker)"
-#             - !Join
-#               - ''
-#               - - sed -i "s/ANALYTICS_IP/
-#                 - $PRIVATE_IP
-#                 - >-
-#                   /g"
-#                   /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2/analytics/conf/worker/deployment.yaml
-#             - /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2/analytics/wso2/worker/bin/carbon.sh start
-#             - echo 'export HISTTIMEFORMAT="%F %T "' >> /etc/profile.d/history.sh
-#             - cat /dev/null > ~/.bash_history && history -c
-#     DependsOn:
-#       # - WSO2EIAnalyticsSecurityGroup
-#       # - WSO2EIAnalyticsLoadBalancer
-#       - WSO2EIVPCInternetGatewayAttachment
-#       - WSO2EIDBInstance
-  #     # - PuppetMaster
-  # WSO2EIAnalyticsNode1AutoScalingGroup:
-  #   Type: 'AWS::AutoScaling::AutoScalingGroup'
-  #   Properties:
-  #     LaunchConfigurationName: !Ref WSO2EIAnalyticsNode1LaunchConfiguration
-  #     DesiredCapacity: 1
-  #     MinSize: 1
-  #     MaxSize: 1
-  #     VPCZoneIdentifier:
-  #       - !Ref WSO2EIPrivateSubnet1
-  #     Tags:
-  #       - Key: Name
-  #         Value: WSO2EIAnalyticsWorker
-  #         PropagateAtLaunch: 'true'
-  #       - Key: cluster
-  #         Value: ei-analytics
-  #         PropagateAtLaunch: 'true'
-  #   DependsOn:
-  #     - WSO2EIAnalyticsLoadBalancer
-  #     - WSO2EIAnalyticsNode1LaunchConfiguration
-# Analyitcs Dashboard
-  # WSO2EIAnalyticsNode2LaunchConfiguration:
-  #   Type: 'AWS::AutoScaling::LaunchConfiguration'
-  #   Properties:
-  #     ImageId: !FindInMap
-  #       - WSO2EIAMIRegionMap
-  #       - !Ref 'AWS::Region'
-  #       - Ubuntu180464bit
-  #     InstanceType: !Ref WSO2InstanceType
-  #     BlockDeviceMappings:
-  #       - DeviceName: /dev/sda1
-  #         Ebs:
-  #           VolumeSize: '20'
-  #           VolumeType: gp2
-  #           DeleteOnTermination: 'true'
-  #     KeyName: !Ref KeyPairName
-  #     SecurityGroups:
-  #       - !Ref WSO2EIAnalyticsSecurityGroup
-  #     UserData: !Base64
-  #       'Fn::Join':
-  #         - |+
-  #
-  #         - - '#!/bin/bash'
-  #           - 'export PATH=~/.local/bin:$PATH'
-  #           - apt-get update
-  #           - apt-get install -y puppet
-  #           - sed -i '/\[main\]/a server=puppet' /etc/puppet/puppet.conf
-  #           - !Join
-  #             - ''
-  #             - - export PuppetmasterIP=
-  #               - !GetAtt
-  #                 - PuppetMaster
-  #                 - PrivateIp
-  #           - echo "${PuppetmasterIP} puppet puppetmaster" >> /etc/hosts
-  #           - sleep 500
-  #           - export FACTER_profile=ei_analytics_dashboard
-  #           - puppet agent -vt
-  #           - sleep 30
-  #           - apt-get install -y python3-pip
-  #           - pip3 install boto3
-  #           - !Sub "PRIVATE_IP=$(python3 /usr/local/bin/private_ip_extractor.py ${AWS::Region} ${AWSAccessKeyId} ${AWSAccessKeySecret} WSO2EIAnalyticsWorker)"
-  #           - !Join
-  #             - ''
-  #             - - sed -i "s/ANALYTICS_IP/
-  #               - $PRIVATE_IP
-  #               - >-
-  #                 /g"
-  #                 /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2/analytics/conf/dashboard/deployment.yaml
-  #           - /usr/lib/wso2/wso2ei/6.4.0/wso2ei-6.4.0/wso2/analytics/wso2/dashboard/bin/carbon.sh start
-  #           - echo 'export HISTTIMEFORMAT="%F %T "' >> /etc/profile.d/history.sh
-  #           - cat /dev/null > ~/.bash_history && history -c
-  #   DependsOn:
-  #     - WSO2EIAnalyticsSecurityGroup
-  #     - WSO2EIAnalyticsLoadBalancer
-  #     - WSO2EIVPCInternetGatewayAttachment
-  #     - WSO2EIDBInstance
-  #     - PuppetMaster
-  # WSO2EIAnalyticsNode2AutoScalingGroup:
-  #   Type: 'AWS::AutoScaling::AutoScalingGroup'
-  #   Properties:
-  #     LaunchConfigurationName: !Ref WSO2EIAnalyticsNode2LaunchConfiguration
-  #     DesiredCapacity: 1
-  #     MinSize: 1
-  #     MaxSize: 1
-  #     TargetGroupARNs:
-  #       - !Ref WSO2EIALBTargetGroup
-  #     VPCZoneIdentifier:
-  #       - !Ref WSO2EIPrivateSubnet1
-  #     Tags:
-  #       - Key: Name
-  #         Value: WSO2EIAnalyticsDashboard
-  #         PropagateAtLaunch: 'true'
-  #       - Key: cluster
-  #         Value: ei-analytics
-  #         PropagateAtLaunch: 'true'
-  #   DependsOn:
-  #     - WSO2EIAnalyticsLoadBalancer
-  #     - WSO2EIAnalyticsNode2LaunchConfiguration
-  # WSO2EIAnalyticsLoadBalancerSecurityGroup:
-  #   Type: 'AWS::EC2::SecurityGroup'
-  #   Properties:
-  #     VpcId: !Ref WSO2EIVPC
-  #     GroupDescription: WSO2 EI ELB Security Group
-  #     SecurityGroupIngress:
-  #       - IpProtocol: tcp
-  #         FromPort: '9763'
-  #         ToPort: '9763'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '443'
-  #         ToPort: '443'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9443'
-  #         ToPort: '9443'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '8243'
-  #         ToPort: '8243'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '8280'
-  #         ToPort: '8280'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '4100'
-  #         ToPort: '4100'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7711'
-  #         ToPort: '7711'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7611'
-  #         ToPort: '7611'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7711'
-  #         ToPort: '7711'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7611'
-  #         ToPort: '7611'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9711'
-  #         ToPort: '9711'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9611'
-  #         ToPort: '9611'
-  #         CidrIp: 0.0.0.0/0
-  #     SecurityGroupEgress:
-  #       - IpProtocol: tcp
-  #         FromPort: '9763'
-  #         ToPort: '9763'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9443'
-  #         ToPort: '9443'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '443'
-  #         ToPort: '443'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '8243'
-  #         ToPort: '8243'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '8280'
-  #         ToPort: '8280'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '4100'
-  #         ToPort: '4100'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7711'
-  #         ToPort: '7711'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '7611'
-  #         ToPort: '7611'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9711'
-  #         ToPort: '9711'
-  #         CidrIp: 0.0.0.0/0
-  #       - IpProtocol: tcp
-  #         FromPort: '9611'
-  #         ToPort: '9611'
-  #         CidrIp: 0.0.0.0/0
-  WSO2EILoadBalancerSecurityGroup:
+      - WSO2ISLoadBalancer
+      - WSO2ISNode2LaunchConfiguration
+  WSO2ISLoadBalancerSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      VpcId: !Ref WSO2EIVPC
-      GroupDescription: WSO2 EI ELB Security Group
+      VpcId: !Ref WSO2ISVPC
+      GroupDescription: WSO2 IS ELB Security Group
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: '9763'
@@ -1066,8 +687,8 @@ Resources:
           ToPort: '8280'
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: '4100'
-          ToPort: '4100'
+          FromPort: '5701'
+          ToPort: '5701'
           CidrIp: 0.0.0.0/0
       SecurityGroupEgress:
         - IpProtocol: tcp
@@ -1091,22 +712,22 @@ Resources:
           ToPort: '8280'
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: '4100'
-          ToPort: '4100'
+          FromPort: '5701'
+          ToPort: '5701'
           CidrIp: 0.0.0.0/0
-  WSO2EILoadBalancer:
+  WSO2ISLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
       CrossZone: true
       SecurityGroups:
-        - !Ref WSO2EILoadBalancerSecurityGroup
+        - !Ref WSO2ISLoadBalancerSecurityGroup
       Subnets:
-        - !Ref WSO2EIPublicSubnet2
-        - !Ref WSO2EIPublicSubnet1
+        - !Ref WSO2ISPublicSubnet2
+        - !Ref WSO2ISPublicSubnet1
       LBCookieStickinessPolicy:
         - PolicyName: LBStickyPolicy
       Listeners:
-        - LoadBalancerPort: '80'
+        - LoadBalancerPort: '9763'
           InstancePort: '9763'
           Protocol: HTTP
           InstanceProtocol: HTTP
@@ -1164,26 +785,17 @@ Resources:
           Interval: '10'
           Timeout: '5'
     DependsOn:
-      - WSO2EILoadBalancerSecurityGroup
+      - WSO2ISLoadBalancerSecurityGroup
 Outputs:
-  IntegratorCarbonURL:
+  ISCarbonURL:
     Value: !Join
       - ''
       - - 'https://'
         - !GetAtt
-          - WSO2EILoadBalancer
+          - WSO2ISLoadBalancer
           - DNSName
         - '/carbon'
-    Description: Integrator Carbon Management Console URL
-  # AnalyticsCarbonURL:
-  #   Value: !Join
-  #     - ''
-  #     - - 'https://'
-  #       - !GetAtt
-  #         - WSO2EIAnalyticsLoadBalancer
-  #         - DNSName
-  #       - '/portal'
-  #   Description: Analytics Management Console URL
+    Description: Identity Server Management Console URL
 Parameters:
   AWSAccessKeyId:
     Type: String
@@ -1218,13 +830,13 @@ Parameters:
   WUMUsername:
     Type: String
     Default: ""
-  DBEngine:
-    Type: String
-    Default: MySQL_5.6
   DBUsername:
     Type: String
     MinLength: 4
     AllowedPattern: '[A-Za-z0-9\-]+'
+  DBEngine:
+    Type: String
+    Default: MySQL_5.6
   DBPassword:
     Type: String
     MinLength: 8
@@ -1248,20 +860,20 @@ Mappings:
     eu-west-1:
       Ubuntu180464bit: ami-0ea3b70805378f796
     us-east-1:
-      Ubuntu180464bit: ami-04586921b14a4af8b
+      Ubuntu180464bit: ami-04db6acce789912b4
     us-east-2:
       Ubuntu180464bit: ami-0e8d8e6d8d5498378
     us-west-1:
       Ubuntu180464bit: ami-01c303b902735f14b
     us-west-2:
       Ubuntu180464bit: ami-0b0d60d0d5ed5c8c6
-  WSO2EIAMIRegionMap:
+  WSO2ISAMIRegionMap:
     ap-southeast-2:
       Ubuntu180464bit: ami-07a3bd4944eb120a0
     eu-west-1:
       Ubuntu180464bit: ami-00035f41c82244dab
     us-east-1:
-      Ubuntu180464bit: ami-0ac019f4fcb7cb7e6
+      Ubuntu180464bit: ami-0e2dcb722ff3518e6
     us-east-2:
       Ubuntu180464bit: ami-0f65671a86f061fcd
     us-west-1:
