@@ -493,10 +493,9 @@ Resources:
             - service puppet restart
             - mkdir -p /mnt/efs
             - !Sub "mount -t nfs4 -o nfsvers=4.1 ${WSO2ISEFSFileSystem}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs"
-            - sleep 350
+            - sleep 180
             - export FACTER_profile=is
             - puppet agent -vt
-            - sleep 120
             - 'if [ ! -d "/mnt/efs/server" ]; then'
             - '    mkdir -p /mnt/efs/server'
             - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/wso2is-5.7.0/repository/deployment/server /mnt/efs'
@@ -595,10 +594,9 @@ Resources:
             - service puppet restart
             - mkdir -p /mnt/efs
             - !Sub "mount -t nfs4 -o nfsvers=4.1 ${WSO2ISEFSFileSystem}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs"
-            - sleep 350
+            - sleep 200
             - export FACTER_profile=is
             - puppet agent -vt
-            - sleep 120
             - 'if [ ! -d "/mnt/efs/server" ]; then'
             - '    mkdir -p /mnt/efs/server'
             - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/deployment/server /mnt/efs'
