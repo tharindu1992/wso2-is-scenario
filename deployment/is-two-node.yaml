@@ -801,7 +801,7 @@ Outputs:
         - !GetAtt
           - WSO2ISLoadBalancer
           - DNSName
-          - '/service'
+        - '/service'
     Description: Carbon Server URL
 Parameters:
   AWSAccessKeyId:
@@ -844,6 +844,11 @@ Parameters:
   DBEngine:
     Type: String
     Default: MySQL_5.6
+    AllowedValues:
+      - MySQL_5.7
+      - MySQL_5.6
+      - Oracle
+      - MSSQL
   DBPassword:
     Type: String
     MinLength: 8
@@ -880,9 +885,9 @@ Mappings:
     eu-west-1:
       Ubuntu180464bit: ami-00035f41c82244dab
     us-east-1:
-      Ubuntu180464bit: ami-0e2dcb722ff3518e6
+      Ubuntu180464bit: ami-053ac76b77200e86f
     us-east-2:
-      Ubuntu180464bit: ami-0f65671a86f061fcd
+      Ubuntu180464bit: ami-0d0b4ddcec498fbce
     us-west-1:
       Ubuntu180464bit: ami-063aa838bd7631e0b
     us-west-2:
