@@ -498,14 +498,14 @@ Resources:
             - puppet agent -vt
             - 'if [ ! -d "/mnt/efs/server" ]; then'
             - '    mkdir -p /mnt/efs/server'
-            - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/wso2is-5.7.0/repository/deployment/server /mnt/efs'
+            - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/deployment/server /mnt/efs'
             - fi
             - >-
               rm -rf
-              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/wso2is-5.7.0/repository/deployment/server
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/deployment/server
             - >-
               ln -s /mnt/efs/server
-              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/wso2is-5.7.0/repository/deployment/server
+              /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/deployment/server
             - 'if [ ! -d "/mnt/efs/tenants" ]; then'
             - '    mkdir -p /mnt/efs/tenants'
             - '    cp -r /usr/lib/wso2/wso2is/5.7.0/wso2is-5.7.0/repository/tenants /mnt/efs'
@@ -722,27 +722,28 @@ Resources:
       Subnets:
         - !Ref WSO2ISPublicSubnet2
         - !Ref WSO2ISPublicSubnet1
-      LBCookieStickinessPolicy:
-        - PolicyName: LBStickyPolicy
+      AppCookieStickinessPolicy:
+        - PolicyName: AppCookieSticky
+          CookieName: JSESSIONID
       Listeners:
         - LoadBalancerPort: '9763'
           InstancePort: '9763'
           Protocol: HTTP
           InstanceProtocol: HTTP
           PolicyNames:
-            - LBStickyPolicy
+            - AppCookieSticky
         - LoadBalancerPort: '8280'
           InstancePort: '8280'
           Protocol: HTTP
           InstanceProtocol: HTTP
           PolicyNames:
-            - LBStickyPolicy
-        - LoadBalancerPort: '9443'
+            - AppCookieSticky
+        - LoadBalancerPort: '443'
           InstancePort: '9443'
           Protocol: HTTPS
           InstanceProtocol: HTTPS
           PolicyNames:
-            - LBStickyPolicy
+            - AppCookieSticky
           SSLCertificateId: !Join
             - ''
             - - 'arn:aws:iam::'
@@ -750,12 +751,12 @@ Resources:
               - ':server-certificate'
               - /
               - !Ref CertificateName
-        - LoadBalancerPort: '443'
+        - LoadBalancerPort: '9443'
           InstancePort: '9443'
           Protocol: HTTPS
           InstanceProtocol: HTTPS
           PolicyNames:
-            - LBStickyPolicy
+            - AppCookieSticky
           SSLCertificateId: !Join
             - ''
             - - 'arn:aws:iam::'
@@ -768,7 +769,7 @@ Resources:
           Protocol: HTTPS
           InstanceProtocol: HTTPS
           PolicyNames:
-            - LBStickyPolicy
+            - AppCookieSticky
           SSLCertificateId: !Join
             - ''
             - - 'arn:aws:iam::'
@@ -785,7 +786,7 @@ Resources:
     DependsOn:
       - WSO2ISLoadBalancerSecurityGroup
 Outputs:
-  ISCarbonURL:
+  MgtConsoleUrl:
     Value: !Join
       - ''
       - - 'https://'
@@ -794,7 +795,7 @@ Outputs:
           - DNSName
         - '/carbon'
     Description: Identity Server Management Console URL
-  ISServerURL:
+  CarbonServerUrl:
     Value: !Join
       - ''
       - - 'https://'
@@ -803,6 +804,24 @@ Outputs:
           - DNSName
         - '/services'
     Description: Carbon Server URL
+  ISHttpUrl:
+    Value: !Join
+      - ''
+      - - ''
+        - !GetAtt
+          - WSO2ISLoadBalancer
+          - DNSName
+        - ':80'
+    Description: IS HTTP Gateway endpoint
+  ISHttpsUrl:
+    Value: !Join
+      - ''
+      - - ''
+        - !GetAtt
+          - WSO2ISLoadBalancer
+          - DNSName
+        - ':443'
+    Description: IS HTTPS Gateway endpoint
 Parameters:
   AWSAccessKeyId:
     Type: String
@@ -843,7 +862,12 @@ Parameters:
     AllowedPattern: '[A-Za-z0-9\-]+'
   DBEngine:
     Type: String
-    Default: MySQL_5.6
+    Default: MySQL_5.7
+    # AllowedValues:
+    #   - MySQL_5.7
+    #   - MySQL_5.6
+    #   - Oracle
+    #   - MSSQL
   DBPassword:
     Type: String
     MinLength: 8
