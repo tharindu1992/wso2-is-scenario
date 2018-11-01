@@ -807,7 +807,7 @@ Outputs:
   ISHttpUrl:
     Value: !Join
       - ''
-      - - ''
+      - - 'http://'
         - !GetAtt
           - WSO2ISLoadBalancer
           - DNSName
@@ -816,7 +816,7 @@ Outputs:
   ISHttpsUrl:
     Value: !Join
       - ''
-      - - ''
+      - - 'https://'
         - !GetAtt
           - WSO2ISLoadBalancer
           - DNSName
